@@ -77,14 +77,6 @@ private:
 	DialogueBox* dialogueBox = nullptr;						// 对话框实例
 	cocos2d::TMXTiledMap* tileMap = nullptr;				// Tiled地图实例
 	cocos2d::TMXObjectGroup* collisionsGroup = nullptr;		// 碰撞检测组
-	InventoryUI* _inventoryUI = nullptr;					// 背包UI实例
-	StatusUI* _statusUI;									// 状态UI实例
-	cocos2d::Sprite* toolIcon = nullptr;					// 工具图标精灵
-	void initToolIcon();									// 初始化工具图标
-	void updateToolIcon();									// 更新工具图标显示
-	Sprite* seedIcon = nullptr;								// 种子图标精灵
-	void initSeedIcon();									// 初始化种子图标
-	void updateSeedIcon();									// 更新种子图标显示
 	void initLewis();										// 初始化Lewis NPC
 	void initMarlon();										// 初始化Marlon NPC
 	void initMaru();										// 初始化Maru NPC
