@@ -1,16 +1,14 @@
 #include "service/WeatherService.h"
 #include "WeatherManager.h"
-#include "Rain.h"
-#include "Drought.h"
-#include "NormalWeather.h"
+#include "factory/WeatherFactory.h"
 
 void WeatherService::init() {
-    // 默认设置为 Normal
-    WeatherManager::getInstance()->setWeather(NormalWeather::create());
+    // 默认设置为Normal
+    WeatherManager::getInstance()->setWeather(WeatherFactory::create("normal"));
 }
 
 void WeatherService::update(float dt) {
-    // 如需按时间刷新，可在此调用 randomRefreshWeather()
+    // 如需按时间刷新，可在此调度 randomRefreshWeather()
 }
 
 void WeatherService::randomRefreshWeather() {
@@ -18,13 +16,12 @@ void WeatherService::randomRefreshWeather() {
 }
 
 void WeatherService::setWeather(const std::string& type) {
-    if (type == "rain") {
-        WeatherManager::getInstance()->setWeather(Rain::create());
-    } else if (type == "drought") {
-        WeatherManager::getInstance()->setWeather(Drought::create());
-    } else { // default normal
-        WeatherManager::getInstance()->setWeather(NormalWeather::create());
-    }
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    WeatherManager::getInstance()->setWeather(WeatherFactory::create(type));
 }
 
 void WeatherService::onDayChanged(const DayChangedEvent&) {

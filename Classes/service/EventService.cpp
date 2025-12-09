@@ -1,8 +1,6 @@
 #include "EventService.h"
 #include "BaseEvent.h"
-#include "Sleep.h"
-#include "BridgeEvent.h"
-#include "Cooking.h"
+#include "factory/EventFactory.h"
 #include "service/MapService.h"
 #include "service/PlayerService.h"
 #include "service/UIService.h"
@@ -33,9 +31,14 @@ void EventService::init(Scene* scn, MapService* ms, PlayerService* ps) {
     if (!gameMap || !player) return;
     
     // 创建事件
-    events.push_back(SleepEvent::create(gameMap, player));
-    events.push_back(BridgeEvent::create(gameMap, player));
-    events.push_back(Cooking::create(gameMap, player));
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    events.push_back(EventFactory::create("sleep", gameMap, player));
+    events.push_back(EventFactory::create("bridge", gameMap, player));
+    events.push_back(EventFactory::create("cooking", gameMap, player));
     
     for (auto event : events) {
         if (event) {

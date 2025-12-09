@@ -1547,6 +1547,7 @@
 #include "NormalWeather.h"
 #include "AudioManager.h"
 #include "FishingSystem.h"
+#include "factory/NPCFactory.h"
 USING_NS_CC;
 // UI 
 Scene* GameScene::createScene()
@@ -2065,7 +2066,12 @@ void GameScene::initMouseListener()
 }
 void GameScene::initLewis()
 {
-    lewis = Lewis::create();
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    lewis = static_cast<Lewis*>(NPCFactory::create("lewis"));
     if (lewis == nullptr)
     {
         return;
@@ -2100,7 +2106,7 @@ void GameScene::initLewis()
 }
 void GameScene::initMarlon()
 {
-    marlon = Marlon::create();
+    marlon = static_cast<Marlon*>(NPCFactory::create("marlon"));
     if (marlon == nullptr) {
         return;
     }
@@ -2113,7 +2119,7 @@ void GameScene::initMarlon()
 }
 void GameScene::initMaru()
 {
-    maru = Maru::create();
+    maru = static_cast<Maru*>(NPCFactory::create("maru"));
     if (maru == nullptr) {
         return;
     }
@@ -2126,7 +2132,7 @@ void GameScene::initMaru()
 }
 void GameScene::initAlex()
 {
-    alex = Alex::create();
+    alex = static_cast<Alex*>(NPCFactory::create("alex"));
     if (alex == nullptr) {
         return;
     }
@@ -2140,7 +2146,12 @@ void GameScene::initAlex()
 }
 void GameScene::createPig(const Vec2& initialPosition, const std::vector<Vec2>& path)
 {
-    Pig* newPig = Pig::create();                // 创建新的猪实例
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    Pig* newPig = static_cast<Pig*>(NPCFactory::create("pig"));                // 创建新的猪实例
     if (newPig) {
         newPig->setPosition(initialPosition);   // 设置初始位置
         // 设置猪初始位置
@@ -2157,7 +2168,7 @@ void GameScene::createPig(const Vec2& initialPosition, const std::vector<Vec2>& 
 }
 void GameScene::createPig(const Vec2& initialPosition) // 重载 createPig 方法，用于创建静止猪
 {
-    Pig* staticPig = Pig::create();                     // 创建新的猪实例
+    Pig* staticPig = static_cast<Pig*>(NPCFactory::create("pig"));                     // 创建新的猪实例
     if (staticPig) {
         staticPig->setPosition(initialPosition);        // 设置初始位置
         // 设置猪初始位置
@@ -2201,7 +2212,12 @@ void GameScene::initPig()
 }
 void GameScene::createChicken(const Vec2& initialPosition, const std::vector<Vec2>& path)
 {
-    Chicken* newChicken = Chicken::create();            // 创建新的鸡实例
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    Chicken* newChicken = static_cast<Chicken*>(NPCFactory::create("chicken"));            // 创建新的鸡实例
     if (newChicken) {
         newChicken->setPosition(initialPosition);       // 设置初始位置
         // 设置鸡初始位置
@@ -2218,7 +2234,7 @@ void GameScene::createChicken(const Vec2& initialPosition, const std::vector<Vec
 }
 void GameScene::createChicken(const Vec2& initialPosition)  // 重载 createPig 方法，用于创建静止鸡
 {
-    Chicken* staticChicken = Chicken::create();             // 创建新的鸡实例
+    Chicken* staticChicken = static_cast<Chicken*>(NPCFactory::create("chicken"));             // 创建新的鸡实例
     if (staticChicken) {
         staticChicken->setPosition(initialPosition);        // 设置初始位置
         // 设置鸡初始位置
@@ -2248,7 +2264,12 @@ void GameScene::initChicken()
 }
 void GameScene::createSheep(const Vec2& initialPosition, const std::vector<Vec2>& path)
 {
-    Sheep* newSheep = Sheep::create();          // 创建新的羊实例
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    Sheep* newSheep = static_cast<Sheep*>(NPCFactory::create("sheep"));          // 创建新的羊实例
     if (newSheep) {
         newSheep->setPosition(initialPosition); // 设置初始位置
         // 设置羊初始位置
@@ -2265,7 +2286,7 @@ void GameScene::createSheep(const Vec2& initialPosition, const std::vector<Vec2>
 }
 void GameScene::createSheep(const Vec2& initialPosition)  // 重载 createSheep 方法，用于创建静止羊
 {
-    Sheep* staticSheep = Sheep::create();           // 创建新的羊实例
+    Sheep* staticSheep = static_cast<Sheep*>(NPCFactory::create("sheep"));           // 创建新的羊实例
     if (staticSheep) {
         staticSheep->setPosition(initialPosition);  // 设置初始位置
         // 设置羊初始位置

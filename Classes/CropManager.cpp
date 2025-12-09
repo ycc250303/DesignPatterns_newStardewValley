@@ -1,4 +1,5 @@
 #include "CropManager.h"
+#include "factory/CropFactory.h"
 
 // 初始化静态成员变量
 CropManager* CropManager::_instance = nullptr;  // 实例
@@ -477,7 +478,12 @@ bool CropManager::plantCorn(const Vec2& tilePos)
     worldPos.y += CROP_OFFSET_Y;
 
     // 创建玉米作物
-    auto corn = Corn::create(worldPos);
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    auto corn = CropFactory::create(Player::SeedType::CORN, worldPos);
     if (corn)
     {
         _gameScene->addChild(corn, 0);
@@ -536,7 +542,12 @@ bool CropManager::plantTomato(const Vec2& tilePos)
     worldPos.x += CROP_OFFSET_X;
     worldPos.y += CROP_OFFSET_Y;
     // 创建番茄作物
-    auto tomato = Tomato::create(worldPos);
+/****************************************************************
+ *
+ * 使用工厂方法模式重构 - 重构后代码
+ *
+ ****************************************************************/
+    auto tomato = CropFactory::create(Player::SeedType::TOMATO, worldPos);
     if (tomato)
     {
         _gameScene->addChild(tomato, 0);
