@@ -1,4 +1,6 @@
 #include "Marlon.h"
+#include "GameMap.h"
+#include "cocos2d.h"
 
 USING_NS_CC;
 
@@ -45,4 +47,19 @@ void Marlon::initializeDefaultBehavior()
 void Marlon::staticAnimation()
 {
     ;
+}
+
+// 实现 GameEntity 接口
+void Marlon::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+    if (!map) return;
+    Vec2 worldPos = map->convertToWorldCoord(tilePos);
+    this->setPosition(worldPos);
+}
+
+void Marlon::update(float dt) {
+    // Marlon 不需要移动更新
+}
+
+void Marlon::cleanup() {
+    this->removeFromParent();
 }

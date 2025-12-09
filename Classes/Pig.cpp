@@ -1,5 +1,11 @@
 #include "Pig.h"
+#include "GameMap.h"
+#include "cocos2d.h"
+#include <sstream>
+
 USING_NS_CC;
+
+int Pig::nextId = 1;
 
 Pig* Pig::create()
 {
@@ -23,6 +29,7 @@ bool Pig::init()
 	moveSpeed = 50.0f;//移速
 	heartPoint = 0;
 	relationship = Relation::DEFAULT;
+	entityId = nextId++; // 分配唯一ID
 
 	//设置精灵属性
 	this->setAnchorPoint(Vec2(0.5f, 0.5f));//设置锚点
@@ -32,6 +39,37 @@ bool Pig::init()
 	this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
 	this->setScale(2.0);
 	return true;
+}
+
+// 实现 GameEntity 接口
+void Pig::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+	if (!map) return;
+	Vec2 worldPos = map->convertToWorldCoord(tilePos);
+	this->setPosition(worldPos);
+	staticAnimation(); // 静止动画
+}
+
+void Pig::initialize(const cocos2d::Vec2& tilePos, GameMap* map, const std::vector<cocos2d::Vec2>& path) {
+	if (!map) return;
+	Vec2 worldPos = map->convertToWorldCoord(tilePos);
+	this->setPosition(worldPos);
+	setPath(path);
+}
+
+void Pig::update(float dt) {
+	if (!path.empty()) {
+		moveAlongPath(dt);
+	}
+}
+
+void Pig::cleanup() {
+	this->removeFromParent();
+}
+
+std::string Pig::getEntityId() const {
+	std::ostringstream oss;
+	oss << "pig_" << entityId;
+	return oss.str();
 }
 
 void Pig::moveToDirection(cocos2d::Vec2& destination, float dt)

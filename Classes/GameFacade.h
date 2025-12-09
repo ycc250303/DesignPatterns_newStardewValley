@@ -38,6 +38,7 @@ public:
     void createQuestTipLabelIfNeeded();
     void updateQuestUI();
     void updateQuestUIPosition();
+    class InventoryUI* getInventoryUI() const;
     
     // ========== 事件服务封装 ==========
     void handleQuestDialogue(class Lewis* lewis);
@@ -60,7 +61,6 @@ private:
  ****************************************************************/
     std::unique_ptr<class MapService> mapService;
     std::unique_ptr<class PlayerService> playerService;
-    std::unique_ptr<class EntityService> entityService;
     std::unique_ptr<class UIService> uiService;
     std::unique_ptr<class EventService> eventService;
     std::unique_ptr<class AudioService> audioService;

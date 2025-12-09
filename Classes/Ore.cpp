@@ -1,6 +1,14 @@
 #include "Ore.h"
+#include "GameMap.h"
+#include "GameScene.h"
+#include "ItemSystem.h"
+#include "cocos2d.h"
+#include <sstream>
+#include <algorithm>
 
 USING_NS_CC;
+
+int Ore::nextId = 1;
 
 Ore* Ore::create(const std::string& spriteName, int health)
 {
@@ -18,7 +26,8 @@ Ore::Ore() :
     _health(100),
     _dug(false),
     _canDug(true),
-    _onOreDug(nullptr)
+    _onOreDug(nullptr),
+    entityId(nextId++)
 {
 }
 
@@ -37,7 +46,7 @@ bool Ore::init(const std::string& spriteName, int health)
     _canDug = true;
 
     this->setAnchorPoint(Vec2(0.5f, 0.0f));
-    this->setTextureRect(cocos2d::Rect(0, 0, 48, 48)); // ÉèÖÃ¿óÊ¯µÄÎÆÀíÇøÓò
+    this->setTextureRect(cocos2d::Rect(0, 0, 48, 48)); // ï¿½ï¿½ï¿½Ã¿ï¿½Ê¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     this->setScale(3.0f);
     return true;
 }
@@ -46,17 +55,17 @@ void Ore::dig(int damage)
 {
     if (!canBeDug())
     {
-        return; // Èç¹û²»ÄÜÍÚ¾ò£¬Ö±½Ó·µ»Ø
+        return; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¾ï¿½Ö±ï¿½Ó·ï¿½ï¿½ï¿½
     }
 
     _health -= damage;
 
-    // Ê¹ÓÃShakeÀ´ÊµÏÖ¶¶¶¯Ð§¹û
+    // Ê¹ï¿½ï¿½Shakeï¿½ï¿½Êµï¿½Ö¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     auto shakeBy = Sequence::create(
-        RotateBy::create(0.05f, -5),  // Ïò×óÇãÐ±5¶È
-        RotateBy::create(0.05f, 10),   // ÏòÓÒÇãÐ±10¶È
-        RotateBy::create(0.05f, -10),  // Ïò×óÇãÐ±10¶È
-        RotateBy::create(0.05f, 5),    // »Øµ½Ô­Î»
+        RotateBy::create(0.05f, -5),  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±5ï¿½ï¿½
+        RotateBy::create(0.05f, 10),   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±10ï¿½ï¿½
+        RotateBy::create(0.05f, -10),  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±10ï¿½ï¿½
+        RotateBy::create(0.05f, 5),    // ï¿½Øµï¿½Ô­Î»
         nullptr
     );
     this->runAction(shakeBy);
@@ -65,14 +74,14 @@ void Ore::dig(int damage)
     {
         _dug = true;
 
-        // ¿óÊ¯±»ÍÚ¾òºóµÄ¶¯»­
+        // ï¿½ï¿½Ê¯ï¿½ï¿½ï¿½Ú¾ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½
         auto fadeOut = FadeOut::create(0.3f);
         auto removeOre = CallFunc::create([this]() {
             if (_onOreDug)
             {
-                _onOreDug(); // µ÷ÓÃÍÚ¾òºóµÄ»Øµ÷
+                _onOreDug(); // ï¿½ï¿½ï¿½ï¿½ï¿½Ú¾ï¿½ï¿½Ä»Øµï¿½
             }
-            this->removeFromParent(); // ÒÆ³ý¿óÊ¯
+            this->removeFromParent(); // ï¿½Æ³ï¿½ï¿½ï¿½Ê¯
             });
 
         this->runAction(Sequence::create(
@@ -86,4 +95,76 @@ void Ore::dig(int damage)
 void Ore::remove()
 {
     this->removeFromParentAndCleanup(true);
+}
+
+// å®žçŽ° GameEntity æŽ¥å£
+void Ore::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+    if (!map) return;
+    Vec2 worldPos = map->convertToWorldCoord(tilePos);
+    this->setPosition(worldPos);
+    
+    // è®¾ç½®å›žè°ƒï¼ˆéœ€è¦GameSceneå¼•ç”¨ï¼Œåœ¨EntityContainerä¸­è®¾ç½®ï¼‰
+    if (_gameScene) {
+        Vec2 ore_worldPos = worldPos;
+        this->setOnOreDug([this, ore_worldPos]() {
+            // åˆ›å»ºçŸ¿çŸ³æŽ‰è½ç‰©
+            auto stoneSprite = Sprite::create("TileSheets/Objects_2.png");
+            if (stoneSprite && _gameScene) {
+                stoneSprite->setTextureRect(Rect(65, 112, 16, 16));
+                stoneSprite->setPosition(ore_worldPos);
+                stoneSprite->setScale(1.5f);
+                _gameScene->addChild(stoneSprite, 2);
+                // æ·»åŠ ç‚¹å‡»äº‹ä»¶
+                auto listener = EventListenerTouchOneByOne::create();
+                listener->setSwallowTouches(true);
+                listener->onTouchBegan = [=](Touch* touch, Event* event) {
+                    Vec2 touchPos = touch->getLocation();
+                    touchPos = _gameScene->convertToNodeSpace(touchPos);
+                    if (stoneSprite->getBoundingBox().containsPoint(touchPos)) {
+                        // æ’­æ”¾æ‹¾å–åŠ¨ç”»
+                        auto fadeOut = FadeOut::create(0.3f);
+                        auto moveUp = MoveBy::create(0.3f, Vec2(0, 20));
+                        auto spawn = Spawn::create(fadeOut, moveUp, nullptr);
+                        auto remove = RemoveSelf::create();
+                        // æ·»åŠ çŸ¿çŸ³åˆ°ç‰©å“ç³»ç»Ÿ
+                        auto addItem = CallFunc::create([]() {
+                            ItemSystem::getInstance()->addItem("stone", 10);
+                        });
+                        stoneSprite->runAction(Sequence::create(
+                            spawn,
+                            addItem,
+                            remove,
+                            nullptr
+                        ));
+                        return true;
+                    }
+                    return false;
+                };
+                Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, stoneSprite);
+                // æ·»åŠ æŽ‰è½åŠ¨ç”»
+                auto dropDistance = 50.0f;
+                auto dropDuration = 0.5f;
+                stoneSprite->setPositionY(stoneSprite->getPositionY() + dropDistance);
+                auto dropAction = EaseOut::create(
+                    MoveBy::create(dropDuration, Vec2(0, -dropDistance)),
+                    2.0f
+                );
+                stoneSprite->runAction(dropAction);
+            }
+        });
+    }
+}
+
+void Ore::update(float dt) {
+    // Ore ä¸éœ€è¦æ›´æ–°
+}
+
+void Ore::cleanup() {
+    this->removeFromParent();
+}
+
+std::string Ore::getEntityId() const {
+    std::ostringstream oss;
+    oss << "ore_" << entityId;
+    return oss.str();
 }

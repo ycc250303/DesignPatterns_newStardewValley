@@ -1,23 +1,42 @@
 #pragma once
 #include "cocos2d.h"
+#include "GameEntity.h"
+#include <functional>
 
-class Ore : public cocos2d::Sprite
+class GameScene;
+
+class Ore : public cocos2d::Sprite, public GameEntity
 {
 public:
     static Ore* create(const std::string& spriteName, int health);
-    bool canBeDug() const { return _canDug; } // 矿石可以被挖掘
-    void dig(int damage); // 挖掘矿石
-    void remove(); // 移除矿石
+    bool canBeDug() const { return _canDug; }
+    void dig(int damage);
+    void remove();
 
-    // 设置挖掘后回调
+    // 璁剧疆鎸栨帢鍥炶皟
     void setOnOreDug(const std::function<void()>& callback) { _onOreDug = callback; }
+    
+    // 瀹炵幇 GameEntity 鎺ュ彛
+    void initialize(const cocos2d::Vec2& tilePos, GameMap* map) override;
+    void update(float dt) override;
+    void cleanup() override;
+    std::string getEntityType() const override { return "resource"; }
+    std::string getEntityId() const override;
+    bool shouldSpawnOnMap(const std::string& mapName) const override { return mapName == "Mine"; }
+    void setVisible(bool visible) override { Node::setVisible(visible); }
+    
+    // 璁剧疆鍦烘櫙寮曠敤锛堢敤浜庡洖璋冿級
+    void setGameScene(GameScene* scene) { _gameScene = scene; }
 
 private:
-    Ore(); // 构造函数
-    ~Ore(); // 析构函数
-    bool init(const std::string& spriteName, int health); // 初始化
-    int _health; // 矿石的生命值
-    bool _dug; // 矿石是否被挖掘
-    bool _canDug; // 矿石是否可以被挖掘
-    std::function<void()> _onOreDug; // 挖掘后的回调
+    Ore();
+    ~Ore();
+    bool init(const std::string& spriteName, int health);
+    static int nextId;
+    int entityId;
+    int _health;
+    bool _dug;
+    bool _canDug;
+    std::function<void()> _onOreDug;
+    GameScene* _gameScene = nullptr;
 };

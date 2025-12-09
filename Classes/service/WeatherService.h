@@ -2,6 +2,9 @@
 #include "cocos2d.h"
 #include "EventBus.h"
 
+// 前向声明
+class Weather;
+
 // 依赖现有的 WeatherManager / Weather / Rain / Drought / NormalWeather
 class WeatherService {
 public:

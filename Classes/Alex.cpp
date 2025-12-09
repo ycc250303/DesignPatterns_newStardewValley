@@ -1,4 +1,7 @@
 #include "Alex.h"
+#include "GameMap.h"
+#include "cocos2d.h"
+
 USING_NS_CC;
 Alex* Alex::create()
 {
@@ -53,4 +56,20 @@ void Alex::initializeAnimations()
     // 创建循环动画
     auto runAnimation = RepeatForever::create(Animate::create(animation));
     this->runAction(runAnimation);                          // 运行动画
+}
+
+// 实现 GameEntity 接口
+void Alex::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+    if (!map) return;
+    Vec2 worldPos = map->convertToWorldCoord(tilePos);
+    this->setPosition(worldPos);
+    initializeAnimations();
+}
+
+void Alex::update(float dt) {
+    // Alex 不需要移动更新
+}
+
+void Alex::cleanup() {
+    this->removeFromParent();
 }

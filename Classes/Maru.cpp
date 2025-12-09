@@ -1,4 +1,6 @@
 #include "Maru.h"
+#include "GameMap.h"
+#include "cocos2d.h"
 
 USING_NS_CC;
 
@@ -45,4 +47,19 @@ void Maru::initializeDefaultBehavior()
 void Maru::staticAnimation()
 {
     ;
+}
+
+// 实现 GameEntity 接口
+void Maru::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+    if (!map) return;
+    Vec2 worldPos = map->convertToWorldCoord(tilePos);
+    this->setPosition(worldPos);
+}
+
+void Maru::update(float dt) {
+    // Maru 不需要移动更新
+}
+
+void Maru::cleanup() {
+    this->removeFromParent();
 }

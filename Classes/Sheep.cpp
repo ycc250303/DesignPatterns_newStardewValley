@@ -1,5 +1,11 @@
 #include "Sheep.h"
+#include "GameMap.h"
+#include "cocos2d.h"
+#include <sstream>
+
 USING_NS_CC;
+
+int Sheep::nextId = 1;
 
 Sheep* Sheep::create()
 {
@@ -15,23 +21,55 @@ Sheep* Sheep::create()
 bool Sheep::init()
 {
 	const std::string imagePath = "Animals/Sheep.png";
-	if (!Sprite::initWithFile(imagePath)) { // 直接使用 Sprite 的初始化
+	if (!Sprite::initWithFile(imagePath)) {
 		return false;
 	}
 
 	//初始化基本信息
-	moveSpeed = 50.0f;//移速
+	moveSpeed = 50.0f;
 	heartPoint = 0;
 	relationship = Relation::DEFAULT;
+	entityId = nextId++;
 
 	//设置精灵属性
-	this->setAnchorPoint(Vec2(0.5f, 0.5f));//设置锚点
-	this->setScale(2.0f);//设置缩放
+	this->setAnchorPoint(Vec2(0.5f, 0.5f));
+	this->setScale(2.0f);
 
 	this->setTextureRect(cocos2d::Rect(0, 0, 32, 32));
 	this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
 	this->setScale(2.0);
 	return true;
+}
+
+// 实现 GameEntity 接口
+void Sheep::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+	if (!map) return;
+	Vec2 worldPos = map->convertToWorldCoord(tilePos);
+	this->setPosition(worldPos);
+	staticAnimation();
+}
+
+void Sheep::initialize(const cocos2d::Vec2& tilePos, GameMap* map, const std::vector<cocos2d::Vec2>& path) {
+	if (!map) return;
+	Vec2 worldPos = map->convertToWorldCoord(tilePos);
+	this->setPosition(worldPos);
+	setPath(path);
+}
+
+void Sheep::update(float dt) {
+	if (!path.empty()) {
+		moveAlongPath(dt);
+	}
+}
+
+void Sheep::cleanup() {
+	this->removeFromParent();
+}
+
+std::string Sheep::getEntityId() const {
+	std::ostringstream oss;
+	oss << "sheep_" << entityId;
+	return oss.str();
 }
 
 void Sheep::moveToDirection(cocos2d::Vec2& destination, float dt)

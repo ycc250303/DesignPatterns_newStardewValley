@@ -1,7 +1,8 @@
 #pragma once
 #include "NPC.h"
+#include "GameEntity.h"
 
-class Pig :public NPC
+class Pig :public NPC, public GameEntity
 {
 public:
 	static Pig* create();
@@ -15,7 +16,20 @@ public:
 		path = newPath;
 		currentPathIndex = 0; // 重置路径索引
 	}
+	
+	// 实现 GameEntity 接口
+	void initialize(const cocos2d::Vec2& tilePos, GameMap* map) override;
+	void initialize(const cocos2d::Vec2& tilePos, GameMap* map, const std::vector<cocos2d::Vec2>& path) override;
+	void update(float dt) override;
+	void cleanup() override;
+	std::string getEntityType() const override { return "animal"; }
+	std::string getEntityId() const override;
+	bool shouldSpawnOnMap(const std::string& mapName) const override { return mapName == "Farm"; }
+	void setVisible(bool visible) override { Node::setVisible(visible); }
+	
 private:
+	static int nextId; // 静态计数器，用于生成唯一ID
+	int entityId; // 实体唯一ID
 	int currentPathIndex = 0; // 当前路径索引
 	int currentDirection = 0;                   // 当前朝向(0:下, 1:上, 2:左, 3:右)
 	int currentFrame = 0;                       // 当前帧索引

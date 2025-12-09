@@ -1,4 +1,10 @@
 #include "Lewis.h"
+#include "GameFacade.h"
+#include "GameTime.h"
+#include "QuestSystem.h"
+#include "cocos2d.h"
+
+USING_NS_CC;
 Lewis* Lewis::create()
 {
     Lewis* lewis = new (std::nothrow) Lewis();
@@ -151,4 +157,45 @@ void Lewis::showThanks()
     // 好感度增加3
     this->heartPoint += 3;
 
+}
+
+// 实现 GameEntity 接口
+void Lewis::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+    if (!map) return;
+    
+    // 设置位置
+    Vec2 worldPos = map->convertToWorldCoord(tilePos);
+    this->setPosition(worldPos);
+    
+    // 设置移动路径
+    Vec2 movePath1_tilePos = Vec2(13, 16);
+    Vec2 movePath2_tilePos = Vec2(18, 16);
+    Vec2 movePath1_worldPos = map->convertToWorldCoord(movePath1_tilePos);
+    Vec2 movePath2_worldPos = map->convertToWorldCoord(movePath2_tilePos);
+    this->path.push_back(movePath1_worldPos);
+    this->path.push_back(movePath2_worldPos);
+    
+    // 检查当前日期和任务状态
+    auto gameTime = GameTime::getInstance();
+    auto questSystem = QuestSystem::getInstance();
+    int currentDay = gameTime->getDay();
+    
+    // 第一天检查木头任务
+    if (currentDay == 1 &&
+        questSystem->getQuestState(QuestType::COLLECT_WOOD) == QuestState::NOT_STARTED) {
+        GameFacade::instance().showQuestMark(this);
+    }
+    // 第二天检查修桥任务
+    else if (currentDay == 2 &&
+        questSystem->getQuestState(QuestType::REPAIR_BRIDGE) == QuestState::NOT_STARTED) {
+        GameFacade::instance().showQuestMark(this);
+    }
+}
+
+void Lewis::update(float dt) {
+    moveAlongPath(dt);
+}
+
+void Lewis::cleanup() {
+    this->removeFromParent();
 }

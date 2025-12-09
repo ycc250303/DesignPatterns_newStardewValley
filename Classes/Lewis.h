@@ -4,10 +4,11 @@
 #include "Player.h"
 #include "DialogueBox.h"
 #include "QuestSystem.h"
+#include "GameEntity.h"
 #include <vector>
 
 //刘易斯类
-class Lewis : public NPC
+class Lewis : public NPC, public GameEntity
 {
 public:
     static Lewis* create();
@@ -18,6 +19,15 @@ public:
     std::vector<cocos2d::Vec2> path; // 移动路径
     void showThanks();//感谢动画
     void setActionState(ActionState state) { currentActionState = state; }
+    
+    // 实现 GameEntity 接口
+    void initialize(const cocos2d::Vec2& tilePos, GameMap* map) override;
+    void update(float dt) override;
+    void cleanup() override;
+    std::string getEntityType() const override { return "npc"; }
+    std::string getEntityId() const override { return "lewis"; }
+    bool shouldSpawnOnMap(const std::string& mapName) const override { return mapName == "Farm"; }
+    void setVisible(bool visible) override { Node::setVisible(visible); }
 
 private:
     void initializeDefaultBehavior();  // 初始化刘易斯的默认行为

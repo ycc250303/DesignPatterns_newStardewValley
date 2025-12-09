@@ -1,5 +1,11 @@
 #include "Chicken.h"
+#include "GameMap.h"
+#include "cocos2d.h"
+#include <sstream>
+
 USING_NS_CC;
+
+int Chicken::nextId = 1;
 
 Chicken* Chicken::create()
 {
@@ -15,18 +21,19 @@ Chicken* Chicken::create()
 bool Chicken::init()
 {
 	const std::string imagePath = "Animals/White Chicken.png";
-	if (!Sprite::initWithFile(imagePath)) { // Ö±½ÓÊ¹ÓÃ Sprite µÄ³õÊ¼»¯
+	if (!Sprite::initWithFile(imagePath)) {
 		return false;
 	}
 
-	//³õÊ¼»¯»ù±¾ÐÅÏ¢
-	moveSpeed = 50.0f;//ÒÆËÙ
+	//åˆå§‹åŒ–åŸºæœ¬ä¿¡æ¯
+	moveSpeed = 50.0f;
 	heartPoint = 0;
 	relationship = Relation::DEFAULT;
+	entityId = nextId++;
 
-	//ÉèÖÃ¾«ÁéÊôÐÔ
-	this->setAnchorPoint(Vec2(0.5f, 0.5f));//ÉèÖÃÃªµã
-	this->setScale(2.0f);//ÉèÖÃËõ·Å
+	//è®¾ç½®ç²¾çµå±žæ€§
+	this->setAnchorPoint(Vec2(0.5f, 0.5f));
+	this->setScale(2.0f);
 
 	this->setTextureRect(cocos2d::Rect(0, 0, 16, 16));
 	this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
@@ -34,12 +41,43 @@ bool Chicken::init()
 	return true;
 }
 
+// å®žçŽ° GameEntity æŽ¥å£
+void Chicken::initialize(const cocos2d::Vec2& tilePos, GameMap* map) {
+	if (!map) return;
+	Vec2 worldPos = map->convertToWorldCoord(tilePos);
+	this->setPosition(worldPos);
+	staticAnimation();
+}
+
+void Chicken::initialize(const cocos2d::Vec2& tilePos, GameMap* map, const std::vector<cocos2d::Vec2>& path) {
+	if (!map) return;
+	Vec2 worldPos = map->convertToWorldCoord(tilePos);
+	this->setPosition(worldPos);
+	setPath(path);
+}
+
+void Chicken::update(float dt) {
+	if (!path.empty()) {
+		moveAlongPath(dt);
+	}
+}
+
+void Chicken::cleanup() {
+	this->removeFromParent();
+}
+
+std::string Chicken::getEntityId() const {
+	std::ostringstream oss;
+	oss << "chicken_" << entityId;
+	return oss.str();
+}
+
 void Chicken::moveToDirection(cocos2d::Vec2& destination, float dt)
 {
 	cocos2d::Vec2 direction = destination - this->getPosition();
 	float distance = direction.length();
 
-	// ¸üÐÂ·½Ïò
+	// ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½
 	if (direction.y > 0)
 		currentDirection = 2;
 	if (direction.y < 0)
@@ -49,32 +87,32 @@ void Chicken::moveToDirection(cocos2d::Vec2& destination, float dt)
 	if (direction.x > 0)
 		currentDirection = 1;
 
-	// ¹éÒ»»¯·½ÏòÏòÁ¿
+	// ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	direction.normalize();
-	// ¸üÐÂÎ»ÖÃ
+	// ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 	this->setPosition(this->getPosition() + direction * moveSpeed * dt);
-	// ¸üÐÂ×ßÂ·¶¯»­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½
 	animationTimer += dt;
 	if (animationTimer >= FRAME_INTERVAL) {
 		animationTimer = 0;
 		currentFrame = (currentFrame + 1) % 4;
 	}
-	// ÉèÖÃ×ßÂ·Ö¡
-	if (currentDirection == 1) { // ÏòÓÒ
-		this->setScaleX(2.0f); // È·±£Õý³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 16, 16, 16)); // Ê¹ÓÃµÚ¶þÐÐ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·Ö¡
+	if (currentDirection == 1) { // ï¿½ï¿½ï¿½ï¿½
+		this->setScaleX(2.0f); // È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 16, 16, 16)); // Ê¹ï¿½ÃµÚ¶ï¿½ï¿½ï¿½
 	}
-	else if (currentDirection == 3) { // Ïò×ó
-		this->setScaleX(2.0f); // È·±£Õý³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 48, 16, 16)); // Ê¹ÓÃµÚËÄÐÐ
+	else if (currentDirection == 3) { // ï¿½ï¿½ï¿½ï¿½
+		this->setScaleX(2.0f); // È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 48, 16, 16)); // Ê¹ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½
 	}
-	else if (currentDirection == 2) { // ÏòÉÏ
-		this->setScaleX(2.0f); // È·±£Õý³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 32, 16, 16)); // Ê¹ÓÃµÚÈýÐÐ
+	else if (currentDirection == 2) { // ï¿½ï¿½ï¿½ï¿½
+		this->setScaleX(2.0f); // È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 32, 16, 16)); // Ê¹ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½
 	}
-	else if (currentDirection == 0) { // ÏòÏÂ
-		this->setScaleX(2.0f); // È·±£Õý³£Ëõ·Å
-		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 0, 16, 16)); // Ê¹ÓÃµÚÒ»ÐÐ
+	else if (currentDirection == 0) { // ï¿½ï¿½ï¿½ï¿½
+		this->setScaleX(2.0f); // È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		this->setTextureRect(cocos2d::Rect(currentFrame * 16, 0, 16, 16)); // Ê¹ï¿½Ãµï¿½Ò»ï¿½ï¿½
 	}
 
 }
@@ -82,19 +120,19 @@ void Chicken::moveToDirection(cocos2d::Vec2& destination, float dt)
 void Chicken::staticAnimation()
 {
 	currentActionState = ActionState::IDLE;
-	// ´´½¨¶¯»­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	auto animation = Animation::create();
-	animation->setDelayPerUnit(1.0f); // Ã¿Ö¡³ÖÐøÊ±¼ä
+	animation->setDelayPerUnit(1.0f); // Ã¿Ö¡ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 
-	// ¾«Áé±íÓÐ2Ö¡¶¯»­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2Ö¡ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < 2; i++) {
-		auto frame = SpriteFrame::create("Animals/White Chicken.png", cocos2d::Rect(16 * i, 64, 16, 16)); // Ã¿Ö¡µÄÇøÓò
+		auto frame = SpriteFrame::create("Animals/White Chicken.png", cocos2d::Rect(16 * i, 64, 16, 16)); // Ã¿Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		animation->addSpriteFrame(frame);
 	}
 
-	// ´´½¨Ñ­»·¶¯»­
+	// ï¿½ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	auto runAnimation = RepeatForever::create(Animate::create(animation));
-	this->runAction(runAnimation); // ÔËÐÐ¶¯»­
+	this->runAction(runAnimation); // ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½
 }
 
 void Chicken::moveAlongPath(float dt)
@@ -103,16 +141,16 @@ void Chicken::moveAlongPath(float dt)
 		return;
 	}
 	if (currentPathIndex >= path.size()) {
-		currentPathIndex = 0;// Èç¹ûµ½´ïÂ·¾¶Ä©Î²£¬ÖØÖÃË÷Òý
+		currentPathIndex = 0;// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Ä©Î²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 
 	cocos2d::Vec2 targetPosition = path[currentPathIndex];
 	currentActionState = ActionState::MOVING;
-	moveToDirection(targetPosition, dt);// µ÷ÓÃÒÆ¶¯·½·¨
+	moveToDirection(targetPosition, dt);// ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	// ¼ì²âÊÇ·ñµ½´ïÄ¿±êÎ»ÖÃ
+	// ï¿½ï¿½ï¿½ï¿½Ç·ñµ½´ï¿½Ä¿ï¿½ï¿½Î»ï¿½ï¿½
 	if (this->getPosition().distance(targetPosition) < 1.0f) {
-		//staticAnimation();// ²¥·Å¾²Ö¹¶¯»­
-		currentPathIndex++;// ÒÆ¶¯µ½ÏÂÒ»¸öÄ¿±ê
+		//staticAnimation();// ï¿½ï¿½ï¿½Å¾ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
+		currentPathIndex++;// ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ä¿ï¿½ï¿½
 	}
 }

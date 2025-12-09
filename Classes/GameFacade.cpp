@@ -1,7 +1,6 @@
 #include "GameFacade.h"
 #include "service/MapService.h"
 #include "service/PlayerService.h"
-#include "service/EntityService.h"
 #include "service/UIService.h"
 #include "service/EventService.h"
 #include "service/AudioService.h"
@@ -15,6 +14,7 @@
 #include "ItemSystem.h"
 #include "FishingSystem.h"
 #include "CropManager.h"
+#include "InventoryUI.h"
 #include "cocos2d.h"
 #include <utility>
 
@@ -69,7 +69,6 @@ void GameFacade::initialize(cocos2d::Scene* scene) {
  ****************************************************************/
     mapService = std::make_unique<MapService>();
     playerService = std::make_unique<PlayerService>();
-    entityService = std::make_unique<EntityService>();
     uiService = std::make_unique<UIService>();
     eventService = std::make_unique<EventService>();
     audioService = std::make_unique<AudioService>();
@@ -77,7 +76,6 @@ void GameFacade::initialize(cocos2d::Scene* scene) {
 
     mapService->init(scene, "First");
     playerService->init(scene, mapService.get());
-    entityService->init(scene, mapService.get(), playerService.get());
     uiService->init(scene, playerService.get(), mapService.get());
     eventService->init(scene, mapService.get(), playerService.get());
     
@@ -113,9 +111,6 @@ void GameFacade::initialize(cocos2d::Scene* scene) {
         EventType::MapSwitched,
         bus.subscribe(EventType::MapSwitched, [this](const Event& e) {
             const auto* payload = static_cast<const MapSwitchedEvent*>(e.data);
-            if (payload && entityService) {
-                entityService->onMapChanged(payload->mapName);
-            }
         })
     );
     
@@ -142,7 +137,6 @@ void GameFacade::update(float dt) {
     weatherService->update(dt);
     audioService->update(dt);
     playerService->update(dt);
-    entityService->update(dt);
     eventService->update(dt);
     uiService->update(dt);
     
@@ -240,6 +234,10 @@ void GameFacade::updateQuestUIPosition() {
     if (uiService) {
         uiService->updateQuestUIPosition();
     }
+}
+
+InventoryUI* GameFacade::getInventoryUI() const {
+    return uiService ? uiService->getInventoryUI() : nullptr;
 }
 
 // ========== 事件服务封装实现 ==========
